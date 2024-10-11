@@ -20,12 +20,12 @@
     "medusa"
   ],
   "scripts": {
-    "clean": "cross-env yarn run -T rimraf dist",
+    "clean": "cross-env yarn exec $(yarn bin rimraf) dist",
     "watch": "tsc --watch",
     "build": "cross-env yarn run clean && yarn run build:server && yarn run build:admin",
     "build:server": "cross-env yarn run clean && tsc -p tsconfig.json",
     "build:admin": "cross-env medusa-admin build",
-    "prepare": "cross-env NODE_ENV=production yarn run build:server && yarn run -T medusa-admin bundle",
+    "prepare": "cross-env NODE_ENV=production yarn run build:server && yarn run medusa-admin bundle",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "yarn run -T jest"
