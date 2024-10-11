@@ -16,7 +16,7 @@ class FeedService extends TransactionBaseService {
     super(container);
     this.productService = container.productService;
     this.productVariantService = container.productVariantService;
-    this.pathToProduct = options.pathToProduct ?? 'http://localhost:3000/shop/';
+    this.pathToProduct = options.pathToProduct ?? 'http://localhost:3000/products/';
   }
 
   async createFeed() {
@@ -36,35 +36,46 @@ class FeedService extends TransactionBaseService {
         parentFeedProduct.imageLink = parentProduct.thumbnail;
         parentFeedProduct.condition = 'new';
 
-        feedProducts.push(parentFeedProduct);
-
-        for (const variant of variants) {
-          console.log(variant);
-          const variantFeedProduct = new FeedProduct();
-          variantFeedProduct.id = variant.id;
-          variantFeedProduct.title = variant.title;
-          variantFeedProduct.description = parentFeedProduct.description;
-          variantFeedProduct.link = `${this.pathToProduct}${parentProduct.handle}`;
-          variantFeedProduct.condition = parentFeedProduct.condition;
-          variantFeedProduct.availability = variant.allow_backorder
-            ? variant.inventory_quantity > 0
-              ? 'in_stock'
-              : 'backorder'
-            : variant.inventory_quantity > 0
-            ? 'in_stock'
-            : 'out_of_stock';
-          variantFeedProduct.itemGroupId = parentFeedProduct.id;
-          feedProducts.push(variantFeedProduct);
+        if (variants.length === 1) {
+            parentFeedProduct[0].availability = variants[0].allow_backorder
+                ? variants[0].inventory_quantity > 0
+                    ? 'in_stock'
+                    : 'backorder'
+                : variants[0].inventory_quantity > 0
+                    ? 'in_stock'
+                    : 'out_of_stock';
+            feedProducts.push(parentFeedProduct);
+        } else {
+            for (const variant of variants) {
+                console.log(variant);
+                const variantFeedProduct = new FeedProduct();
+                variantFeedProduct.id = variant.id;
+                variantFeedProduct.title = variant.title;
+                variantFeedProduct.description = parentFeedProduct.description;
+                variantFeedProduct.link = `${this.pathToProduct}${parentProduct.handle}`;
+                variantFeedProduct.condition = parentFeedProduct.condition;
+                variantFeedProduct.availability = variant.allow_backorder
+                    ? variant.inventory_quantity > 0
+                        ? 'in_stock'
+                        : 'backorder'
+                    : variant.inventory_quantity > 0
+                        ? 'in_stock'
+                        : 'out_of_stock';
+                variantFeedProduct.itemGroupId = parentFeedProduct.id;
+                feedProducts.push(variantFeedProduct);
+            }
         }
+
+
       }
     }
 
     console.log(feedProducts);
     // 5. Create a new FeedBuilder and populate it with feed products.
     const feedBuilder = new FeedBuilder()
-      .withTitle('Your Product Feed Title')
-      .withLink('https://your-link.com')
-      .withDescription('Your Feed Description');
+      .withTitle('De Geslepen Steen Koongo Feed')
+      .withLink('https://degeslepensteen.nl')
+      .withDescription('De Geslepen Steen catalogus');
 
     // 6. Add each feed product to the feed builder.
     feedProducts.forEach((product) => {
