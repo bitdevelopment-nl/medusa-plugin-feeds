@@ -22,13 +22,13 @@
   "scripts": {
     "clean": "cross-env ./node_modules/.bin/rimraf dist",
     "watch": "tsc --watch",
-    "build": "cross-env yarn run clean && yarn run build:server && pnpm run build:admin",
+    "build": "cross-env yarn run clean && yarn run build:server && yarn run build:admin",
     "build:server": "cross-env yarn run clean && tsc -p tsconfig.json",
     "build:admin": "cross-env medusa-admin build",
     "prepare": "cross-env NODE_ENV=production yarn run build:server && medusa-admin bundle",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "publishL": "rm -r .yalc && rm -r dist && yalc publish --push"
+    "test": "yarn run -T jest"
   },
   "dependencies": {
     "@medusajs/admin": "^7.1.17",
