@@ -1,8 +1,13 @@
 {
-  "name": "medusa-plugin-feeds",
+  "name": "@bitdevelopment-nl/medusa-plugin-feeds",
+  "packageManager": "yarn@4.5.0",
   "version": "0.0.1",
   "description": "A Medusa plugin to provide product feeds.",
-  "author": "Marco Freiberger <marco@freibergersyntax.dev>",
+  "author": {
+    "name": "Bitdevelopment",
+    "url": "https://bitdevelopment.nl",
+    "email": "info@bitdevelopment.nl"
+  },
   "license": "MIT",
   "keywords": [
     "sqlite",
@@ -15,16 +20,16 @@
   "scripts": {
     "clean": "cross-env ./node_modules/.bin/rimraf dist",
     "watch": "tsc --watch",
-    "build": "cross-env pnpm run clean && pnpm run build:server && pnpm run build:admin",
-    "build:server": "cross-env pnpm run clean && tsc -p tsconfig.json",
+    "build": "cross-env yarn run clean && yarn run build:server && pnpm run build:admin",
+    "build:server": "cross-env yarn run clean && tsc -p tsconfig.json",
     "build:admin": "cross-env medusa-admin build",
-    "prepare": "cross-env NODE_ENV=production pnpm run build:server && medusa-admin bundle",
+    "prepare": "cross-env NODE_ENV=production yarn run build:server && medusa-admin bundle",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "publishL": "rm -r .yalc && rm -r dist && yalc publish --push"
   },
   "dependencies": {
-    "@medusajs/admin": "^7.0.1",
+    "@medusajs/admin": "^7.1.17",
     "@medusajs/cache-redis": "^1.8.8",
     "@medusajs/event-bus-local": "^1.9.6",
     "@medusajs/event-bus-redis": "^1.8.9",
@@ -32,9 +37,9 @@
     "@medusajs/ui": "^1.0.0",
     "@tanstack/react-query": "4.22.0",
     "babel-preset-medusa-package": "^1.1.13",
-    "body-parser": "^1.19.1",
+    "body-parser": "1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "16.0.3",
+    "dotenv": "16.3.1",
     "express": "^4.17.2",
     "medusa-interfaces": "^1.3.7",
     "medusa-react": "^9.0.4",
