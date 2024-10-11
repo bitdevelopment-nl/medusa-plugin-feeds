@@ -1,7 +1,7 @@
 {
   "name": "@bitdevelopment-nl/medusa-plugin-feeds",
   "packageManager": "yarn@4.5.0",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A Medusa plugin to provide product feeds.",
   "main": "dist/bitdevelopment-nl-medusa-plugin-feeds.cjs.js",
   "module": "dist/bitdevelopment-nl-medusa-plugin-feeds.esm.js",
