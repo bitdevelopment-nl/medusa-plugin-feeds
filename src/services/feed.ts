@@ -37,7 +37,7 @@ class FeedService extends TransactionBaseService {
         parentFeedProduct.condition = 'new';
 
         if (variants.length === 1) {
-            parentFeedProduct[0].availability = variants[0].allow_backorder
+            parentFeedProduct.availability = variants[0].allow_backorder
                 ? variants[0].inventory_quantity > 0
                     ? 'in_stock'
                     : 'backorder'
