@@ -1,31 +1,42 @@
 import {
-  TransactionBaseService,
-  ProductService,
-  Product as MedusaProduct,
-  ProductVariantService,
-  ProductVariant,
+    TransactionBaseService,
+    ProductService,
+    Product as MedusaProduct,
+    ProductVariant, SalesChannelService, SalesChannel
 } from '@medusajs/medusa';
-import { Product as FeedProduct, FeedBuilder } from 'node-product-catalog-feed';
+import { Product as FeedProduct, FeedBuilder, ProductPrice } from 'node-product-catalog-feed';
+import { PluginOptions } from '../types';
 
 class FeedService extends TransactionBaseService {
   private productService: ProductService;
-  private productVariantService: ProductVariantService;
+  private salesChannelService: SalesChannelService;
+  private readonly options: PluginOptions;
   private readonly pathToProduct: string;
+  private readonly salesChannelName: string;
 
-  constructor(container, options) {
+  constructor(container, options: PluginOptions) {
     super(container);
     this.productService = container.productService;
-    this.productVariantService = container.productVariantService;
+    this.salesChannelService = container.salesChannelService;
+    this.options = options;
     this.pathToProduct = options.pathToProduct ?? 'http://localhost:3000/products/';
+    this.salesChannelName = options.salesChannelName ?? null;
   }
 
   async createFeed() {
-    const products: MedusaProduct[] = await this.productService.list({});
+      const salesChannel: SalesChannel | null = this.salesChannelName
+        ? await this.salesChannelService.retrieveByName(this.salesChannelName) as SalesChannel
+        : null;
+
+      console.log(salesChannel);
+
     const feedProducts = [];
 
-    for (const parentProduct of products) {
+    for await (const parentProduct of this.getProducts(salesChannel ?? null)) {
       const variants: ProductVariant[] =
-        await this.productService.retrieveVariants(parentProduct.id);
+        await this.productService.retrieveVariants(parentProduct.id, {
+            relations: ['variants.prices']
+        });
 
       if (variants && variants.length > 0) {
         const parentFeedProduct = new FeedProduct();
@@ -35,6 +46,7 @@ class FeedService extends TransactionBaseService {
         parentFeedProduct.link = `${this.pathToProduct}${parentProduct.handle}`;
         parentFeedProduct.imageLink = parentProduct.thumbnail;
         parentFeedProduct.condition = 'new';
+        parentFeedProduct.productType = parentProduct.categories?.map((category) => category.name);
 
         if (variants.length === 1) {
             parentFeedProduct.availability = variants[0].allow_backorder
@@ -44,10 +56,15 @@ class FeedService extends TransactionBaseService {
                 : variants[0].inventory_quantity > 0
                     ? 'in_stock'
                     : 'out_of_stock';
+            if (variants[0].prices && variants[0].prices?.length > 0) {
+                parentFeedProduct.price = new ProductPrice(variants[0].prices[0].amount / 100, variants[0].prices[0].currency_code)
+            }
+
             feedProducts.push(parentFeedProduct);
         } else {
+            feedProducts.push(parentFeedProduct);
+
             for (const variant of variants) {
-                console.log(variant);
                 const variantFeedProduct = new FeedProduct();
                 variantFeedProduct.id = variant.id;
                 variantFeedProduct.title = variant.title;
@@ -65,12 +82,9 @@ class FeedService extends TransactionBaseService {
                 feedProducts.push(variantFeedProduct);
             }
         }
-
-
       }
     }
 
-    console.log(feedProducts);
     // 5. Create a new FeedBuilder and populate it with feed products.
     const feedBuilder = new FeedBuilder()
       .withTitle('De Geslepen Steen Koongo Feed')
@@ -84,6 +98,29 @@ class FeedService extends TransactionBaseService {
 
     // 7. Build XML.
     return feedBuilder.buildXml();
+  }
+
+  async *getProducts(salesChannel?: SalesChannel): AsyncGenerator<MedusaProduct> {
+      let count = await this.productService.count();
+
+      let retrievedProducts = 0;
+
+      while (retrievedProducts < count) {
+          const products: MedusaProduct[] = await this.productService.list({}, {
+              skip: retrievedProducts,
+              take: 10,
+              relations: ['categories', 'sales_channels'],
+          });
+
+          for (const product of products) {
+              if (await this.productService.isProductInSalesChannels(product.id, [salesChannel.id])) {
+                  yield product;
+              }
+
+          }
+
+          retrievedProducts += products.length
+      }
   }
 }
 
