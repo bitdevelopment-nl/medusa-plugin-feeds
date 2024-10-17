@@ -101,12 +101,13 @@ class FeedService extends TransactionBaseService {
   }
 
   async *getProducts(salesChannel?: SalesChannel): AsyncGenerator<MedusaProduct> {
-      let count = await this.productService.count();
-
+      let done = false;
       let retrievedProducts = 0;
 
-      while (retrievedProducts < count) {
-          const products: MedusaProduct[] = await this.productService.list({}, {
+      while (!done) {
+          const [products, count] = await this.productService.listAndCount({
+              // deleted_at: null
+          }, {
               skip: retrievedProducts,
               take: 10,
               relations: ['categories', 'sales_channels'],
@@ -120,6 +121,10 @@ class FeedService extends TransactionBaseService {
           }
 
           retrievedProducts += products.length
+
+          if (retrievedProducts >= count) {
+              done = true;
+          }
       }
   }
 }
