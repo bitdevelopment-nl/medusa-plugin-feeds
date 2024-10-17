@@ -12,7 +12,7 @@ class FeedService extends TransactionBaseService {
   private salesChannelService: SalesChannelService;
   private readonly options: PluginOptions;
   private readonly pathToProduct: string;
-  private readonly salesChannelName: string;
+  private readonly salesChannelNames: string[];
 
   constructor(container, options: PluginOptions) {
     super(container);
@@ -20,12 +20,14 @@ class FeedService extends TransactionBaseService {
     this.salesChannelService = container.salesChannelService;
     this.options = options;
     this.pathToProduct = options.pathToProduct ?? 'http://localhost:3000/products/';
-    this.salesChannelName = options.salesChannelName ?? null;
+    this.salesChannelNames = options.salesChannelName ?? null;
   }
 
   async createFeed() {
-      const salesChannel: SalesChannel | null = this.salesChannelName
-        ? await this.salesChannelService.retrieveByName(this.salesChannelName) as SalesChannel
+      const salesChannel: SalesChannel[] | null = this.salesChannelNames.length
+        ? await this.salesChannelService.list({
+              name: this.salesChannelNames
+          })
         : null;
 
       console.log(salesChannel);
@@ -48,7 +50,13 @@ class FeedService extends TransactionBaseService {
         parentFeedProduct.additionalImageLink = parentProduct.images?.map((image) => image.url);
         parentFeedProduct.condition = 'new';
         parentFeedProduct.material = parentProduct.material ?? '';
-        parentFeedProduct.productType = parentProduct.categories?.map((category) => category.name)
+        parentFeedProduct.productType = parentProduct.categories?.map((category) => category.name);
+        parentFeedProduct.customLabels = [
+            parentProduct.sales_channels?.map((salesChannel) => salesChannel.name) ?? []
+        ]
+        if (this.options.hasIdentifier === false) {
+            parentFeedProduct.identifierExists = false;
+        }
 
         if (variants.length === 1) {
             parentFeedProduct.availability = variants[0].allow_backorder
@@ -104,7 +112,7 @@ class FeedService extends TransactionBaseService {
     return feedBuilder.buildXml();
   }
 
-  async *getProducts(salesChannel?: SalesChannel): AsyncGenerator<MedusaProduct> {
+  async *getProducts(salesChannels?: SalesChannel[]): AsyncGenerator<MedusaProduct> {
       let done = false;
       let retrievedProducts = 0;
       let run = 0;
@@ -119,12 +127,17 @@ class FeedService extends TransactionBaseService {
               relations: ['categories', 'sales_channels', 'images'],
           });
 
-          console.log(run * 10, retrievedProducts, products.length, count);
-
           for (const product of products) {
-              if (await this.productService.isProductInSalesChannels(product.id, [salesChannel.id]) && ids.indexOf(product.id) === -1) {
-                  ids.push(product.id);
-                  yield product;
+              if (salesChannels) {
+                  if (await this.productService.isProductInSalesChannels(product.id, salesChannels?.map((salesChannel) => salesChannel.id)) && ids.indexOf(product.id) === -1) {
+                      ids.push(product.id);
+                      yield product;
+                  }
+              } else {
+                  if (ids.indexOf(product.id) === -1) {
+                      ids.push(product.id);
+                      yield product;
+                  }
               }
           }
 
