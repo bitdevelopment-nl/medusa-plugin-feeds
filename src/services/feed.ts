@@ -30,8 +30,6 @@ class FeedService extends TransactionBaseService {
           })
         : null;
 
-      console.log(salesChannel);
-
     const feedProducts = [];
 
     for await (const parentProduct of this.getProducts(salesChannel ?? null)) {
