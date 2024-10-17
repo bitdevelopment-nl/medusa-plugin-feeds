@@ -45,8 +45,10 @@ class FeedService extends TransactionBaseService {
         parentFeedProduct.description = parentProduct.description;
         parentFeedProduct.link = `${this.pathToProduct}${parentProduct.handle}`;
         parentFeedProduct.imageLink = parentProduct.thumbnail;
+        parentFeedProduct.additionalImageLink = parentProduct.images?.map((image) => image.url);
         parentFeedProduct.condition = 'new';
-        parentFeedProduct.productType = parentProduct.categories?.map((category) => category.name);
+        parentFeedProduct.material = parentProduct.material ?? '';
+        parentFeedProduct.productType = parentProduct.categories?.map((category) => category.name)
 
         if (variants.length === 1) {
             parentFeedProduct.availability = variants[0].allow_backorder
@@ -56,6 +58,8 @@ class FeedService extends TransactionBaseService {
                 : variants[0].inventory_quantity > 0
                     ? 'in_stock'
                     : 'out_of_stock';
+            parentFeedProduct.quantity = variants[0].inventory_quantity;
+
             if (variants[0].prices && variants[0].prices?.length > 0) {
                 parentFeedProduct.price = new ProductPrice(variants[0].prices[0].amount / 100, variants[0].prices[0].currency_code)
             }
@@ -103,26 +107,31 @@ class FeedService extends TransactionBaseService {
   async *getProducts(salesChannel?: SalesChannel): AsyncGenerator<MedusaProduct> {
       let done = false;
       let retrievedProducts = 0;
+      let run = 0;
+      const ids = [];
 
       while (!done) {
           const [products, count] = await this.productService.listAndCount({
               // deleted_at: null
           }, {
-              skip: retrievedProducts,
+              skip: run * 10,
               take: 10,
-              relations: ['categories', 'sales_channels'],
+              relations: ['categories', 'sales_channels', 'images'],
           });
 
+          console.log(run * 10, retrievedProducts, products.length, count);
+
           for (const product of products) {
-              if (await this.productService.isProductInSalesChannels(product.id, [salesChannel.id])) {
+              if (await this.productService.isProductInSalesChannels(product.id, [salesChannel.id]) && ids.indexOf(product.id) === -1) {
+                  ids.push(product.id);
                   yield product;
               }
-
           }
 
           retrievedProducts += products.length
+          run++
 
-          if (retrievedProducts >= count) {
+          if (run * 10 >= count) {
               done = true;
           }
       }
