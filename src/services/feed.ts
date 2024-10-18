@@ -67,7 +67,6 @@ class FeedService extends TransactionBaseService {
 
         parentFeedProduct.customLabels = [
             parentProduct.sales_channels?.map((salesChannel) => salesChannel.name) ?? [],
-            parentProduct.origin_country ?? ''
         ]
         if (this.options.hasIdentifier === false) {
             parentFeedProduct.identifierExists = false;
@@ -86,6 +85,11 @@ class FeedService extends TransactionBaseService {
             if (variants[0].prices && variants[0].prices?.length > 0) {
                 parentFeedProduct.price = new ProductPrice(variants[0].prices[0].amount / 100, variants[0].prices[0].currency_code)
             }
+
+            parentFeedProduct.customLabels = [
+                ...parentFeed.customLabels,
+                parentProduct.variants[0].origin_country ?? ''
+            ]
 
             feedProducts.push(parentFeedProduct);
         } else {
