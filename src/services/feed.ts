@@ -87,7 +87,7 @@ class FeedService extends TransactionBaseService {
             }
 
             parentFeedProduct.customLabels = [
-                ...parentFeed.customLabels,
+                ...parentFeedProduct.customLabels,
                 parentProduct.variants[0].origin_country ?? ''
             ]
 
