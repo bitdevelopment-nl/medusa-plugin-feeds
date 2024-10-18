@@ -66,7 +66,8 @@ class FeedService extends TransactionBaseService {
         }
 
         parentFeedProduct.customLabels = [
-            parentProduct.sales_channels?.map((salesChannel) => salesChannel.name) ?? []
+            parentProduct.sales_channels?.map((salesChannel) => salesChannel.name) ?? [],
+            parentProduct.origin_country ?? ''
         ]
         if (this.options.hasIdentifier === false) {
             parentFeedProduct.identifierExists = false;
