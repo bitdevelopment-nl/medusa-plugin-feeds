@@ -88,7 +88,7 @@ class FeedService extends TransactionBaseService {
 
             parentFeedProduct.customLabels = [
                 ...parentFeedProduct.customLabels,
-                parentProduct.variants[0].origin_country ?? ''
+                variants[0].origin_country ?? ''
             ]
 
             feedProducts.push(parentFeedProduct);
