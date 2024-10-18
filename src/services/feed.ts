@@ -1,11 +1,14 @@
+// @ts-nocheck
 import {
     TransactionBaseService,
     ProductService,
     Product as MedusaProduct,
     ProductVariant, SalesChannelService, SalesChannel
 } from '@medusajs/medusa';
-import { Product as FeedProduct, FeedBuilder, ProductPrice } from 'node-product-catalog-feed';
+import {  ProductPrice } from 'node-product-catalog-feed';
 import { PluginOptions } from '../types';
+import FeedBuilder from '../lib/FeedBuilder';
+import FeedProduct from '../lib/FeedProduct';
 
 class FeedService extends TransactionBaseService {
   private productService: ProductService;
@@ -49,6 +52,19 @@ class FeedService extends TransactionBaseService {
         parentFeedProduct.condition = 'new';
         parentFeedProduct.material = parentProduct.material ?? '';
         parentFeedProduct.productType = parentProduct.categories?.map((category) => category.name);
+        if (parentProduct.width) {
+            parentFeedProduct.width = `${(parentProduct.width / 10).toFixed(2)} cm`;
+        }
+        if (parentProduct.height) {
+            parentFeedProduct.height = `${(parentProduct.height / 10).toFixed(2)} cm`;
+        }
+        if (parentProduct.length) {
+            parentFeedProduct.length = `${(parentProduct.length / 10).toFixed(2)} cm`;
+        }
+        if (parentProduct.weight) {
+            parentFeedProduct.weight = `${parentProduct.weight} g`;
+        }
+
         parentFeedProduct.customLabels = [
             parentProduct.sales_channels?.map((salesChannel) => salesChannel.name) ?? []
         ]
