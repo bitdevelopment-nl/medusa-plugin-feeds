@@ -90,7 +90,8 @@ class FeedService extends TransactionBaseService {
                 ...parentFeedProduct.customLabels,
                 variants[0].origin_country ? new Intl.DisplayNames(["nl"], { type: "region" }).of(
                     variants[0].origin_country
-                ) : ''
+                ) : '',
+                parentProduct.diameter ?? null
             ]
 
             feedProducts.push(parentFeedProduct);
