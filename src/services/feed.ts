@@ -45,7 +45,7 @@ class FeedService extends TransactionBaseService {
         const parentFeedProduct = new FeedProduct();
         parentFeedProduct.id = parentProduct.id;
         parentFeedProduct.title = parentProduct.title;
-        parentFeedProduct.description = parentProduct.description;
+        parentFeedProduct.description = parentProduct.description?.replace('\n', '<br />') ?? "";
         parentFeedProduct.link = `${this.pathToProduct}${parentProduct.handle}`;
         parentFeedProduct.imageLink = parentProduct.thumbnail;
         parentFeedProduct.additionalImageLink = parentProduct.images?.map((image) => image.url);
@@ -101,7 +101,7 @@ class FeedService extends TransactionBaseService {
                 const variantFeedProduct = new FeedProduct();
                 variantFeedProduct.id = variant.id;
                 variantFeedProduct.title = variant.title;
-                variantFeedProduct.description = parentFeedProduct.description;
+                variantFeedProduct.description = parentFeedProduct.description?.replace('\n', '<br />') ?? ""
                 variantFeedProduct.link = `${this.pathToProduct}${parentProduct.handle}`;
                 variantFeedProduct.condition = parentFeedProduct.condition;
                 variantFeedProduct.availability = variant.allow_backorder
