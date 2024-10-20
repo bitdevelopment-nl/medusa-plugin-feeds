@@ -45,7 +45,7 @@ class FeedService extends TransactionBaseService {
         const parentFeedProduct = new FeedProduct();
         parentFeedProduct.id = parentProduct.id;
         parentFeedProduct.title = parentProduct.title;
-        parentFeedProduct.description = parentProduct.description?.replace('\n', '<br />') ?? "";
+        parentFeedProduct.description = parentProduct.description?.replace(new RegExp('\\n', 'gm'), '<br />');
         parentFeedProduct.link = `${this.pathToProduct}${parentProduct.handle}`;
         parentFeedProduct.imageLink = parentProduct.thumbnail;
         parentFeedProduct.additionalImageLink = parentProduct.images?.map((image) => image.url);
@@ -53,13 +53,13 @@ class FeedService extends TransactionBaseService {
         parentFeedProduct.material = parentProduct.material ?? '';
         parentFeedProduct.productType = parentProduct.categories?.map((category) => category.name);
         if (parentProduct.width) {
-            parentFeedProduct.width = `${(parentProduct.width / 10).toFixed(2)} cm`;
+            parentFeedProduct.width = `${(parentProduct.width / 10).toFixed(2).replace('.', ',')} cm`;
         }
         if (parentProduct.height) {
-            parentFeedProduct.height = `${(parentProduct.height / 10).toFixed(2)} cm`;
+            parentFeedProduct.height = `${(parentProduct.height / 10).toFixed(2).replace('.', ',')} cm`;
         }
         if (parentProduct.length) {
-            parentFeedProduct.length = `${(parentProduct.length / 10).toFixed(2)} cm`;
+            parentFeedProduct.length = `${(parentProduct.length / 10).toFixed(2).replace('.', ',')} cm`;
         }
         if (parentProduct.weight) {
             parentFeedProduct.weight = `${parentProduct.weight} g`;
